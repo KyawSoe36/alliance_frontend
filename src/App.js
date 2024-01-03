@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Modal from "./components/Modal.js";
+import OrderTable from "./components/OrderTable.js";
+import {
+  create,
+  deleteOrder,
+  getList,
+  update,
+} from "./service/orderService.js";
 import "./styles/styles.css";
-
 function App() {
   const [orders, setOrders] = useState([]);
   const [name, setName] = useState("");
@@ -9,60 +15,37 @@ function App() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const baseUrl = "http://localhost:5000/api/v1";
-
   useEffect(() => {
     fetchOrders();
   }, []);
 
   const fetchOrders = () => {
-    fetch(`${baseUrl}/order`)
-      .then((response) => response.json())
-      .then((data) => setOrders(data.data.orders))
+    getList()
+      .then((data) => setOrders(data.orders))
       .catch((error) => console.error("Error fetching orders:", error));
   };
 
   const handleCreateOrder = () => {
-    fetch("http://localhost:5000/api/v1/order/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, quantity }),
-    })
-      .then((response) => response.json())
+    create(name, quantity)
       .then((data) => {
-        console.log("Order created:", data);
+        closeModal();
         fetchOrders();
       })
       .catch((error) => console.error("Error creating order:", error));
   };
 
   const handleUpdateOrder = () => {
-    fetch(`http://localhost:5000/api/v1/order/${selectedOrderId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, quantity }),
-    })
-      .then((response) => response.json())
+    update(selectedOrderId, name, quantity)
       .then((data) => {
-        console.log("Order updated:", data);
         fetchOrders();
-        setSelectedOrderId(null);
-        setName("");
-        setQuantity("");
+        closeModal();
       })
       .catch((error) => console.error("Error updating order:", error));
   };
 
   const handleDeleteOrder = (id) => {
-    fetch(`http://localhost:5000/api/v1/order/${id}`, {
-      method: "DELETE",
-    })
+    deleteOrder(id)
       .then(() => {
-        console.log("Order deleted:", id);
         fetchOrders();
       })
       .catch((error) => console.error("Error deleting order:", error));
@@ -84,30 +67,12 @@ function App() {
 
   return (
     <div className="container">
-      <h1>Orders</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Quantity</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order) => (
-            <tr key={order.id}>
-              <td>{order.name}</td>
-              <td>{order.quantity}</td>
-              <td>
-                <button onClick={() => handleEditOrder(order)}>Edit</button>
-                <button onClick={() => handleDeleteOrder(order.id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h1>Order List</h1>
+      <OrderTable
+        orders={orders}
+        handleEditOrder={handleEditOrder}
+        handleDeleteOrder={handleDeleteOrder}
+      />
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
