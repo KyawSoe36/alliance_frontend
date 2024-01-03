@@ -10,10 +10,11 @@ import {
 import "./styles/styles.css";
 function App() {
   const [orders, setOrders] = useState([]);
-  const [name, setName] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [orderData, setOrderData] = useState({ name: "", quantity: 1 });
+
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOrderValid, setIsOrderValid] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -26,7 +27,7 @@ function App() {
   };
 
   const handleCreateOrder = () => {
-    create(name, quantity)
+    create(orderData)
       .then((data) => {
         closeModal();
         fetchOrders();
@@ -35,7 +36,7 @@ function App() {
   };
 
   const handleUpdateOrder = () => {
-    update(selectedOrderId, name, quantity)
+    update(selectedOrderId, orderData)
       .then((data) => {
         fetchOrders();
         closeModal();
@@ -53,17 +54,32 @@ function App() {
 
   const handleEditOrder = (order) => {
     setSelectedOrderId(order.id);
-    setName(order.name);
-    setQuantity(order.quantity);
+    setOrderData({
+      name: order.name,
+      quantity: order.quantity,
+    });
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setSelectedOrderId(null);
-    setName("");
-    setQuantity("");
+    setOrderData({ name: "", quantity: 1 });
     setIsModalOpen(false);
   };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setOrderData((prevOrderData) => ({
+      ...prevOrderData,
+      [name]: value,
+    }));
+  };
+
+  useEffect(() => {
+    const dataIsValid = orderData.name !== "" && orderData.quantity >= 1;
+    setIsOrderValid(dataIsValid);
+  }, [orderData]);
 
   return (
     <div className="container">
@@ -75,6 +91,7 @@ function App() {
       />
       <Modal
         isOpen={isModalOpen}
+        isDisableBtn={isOrderValid}
         onClose={closeModal}
         onSubmit={selectedOrderId ? handleUpdateOrder : handleCreateOrder}
         title={selectedOrderId ? "Update Order" : "Create New Order"}
@@ -83,16 +100,19 @@ function App() {
           <label>Name:</label>
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            name="name"
+            value={orderData.name}
+            onChange={handleInputChange}
           />
         </div>
         <div>
           <label>Quantity:</label>
           <input
-            type="text"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
+            type="number"
+            name="quantity"
+            min="1"
+            value={orderData.quantity}
+            onChange={handleInputChange}
           />
         </div>
       </Modal>

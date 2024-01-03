@@ -1,7 +1,14 @@
 import React from "react";
 import "../styles/Modal.css";
 
-const Modal = ({ isOpen, onClose, onSubmit, title, children }) => {
+const Modal = ({
+  isOpen,
+  isDisableBtn,
+  onClose,
+  onSubmit,
+  title,
+  children,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -12,7 +19,9 @@ const Modal = ({ isOpen, onClose, onSubmit, title, children }) => {
         </span>
         <h2>{title}</h2>
         <div>{children}</div>
-        <button onClick={onSubmit}>Submit</button>
+        <button disabled={!isDisableBtn} onClick={onSubmit}>
+          Submit
+        </button>
       </div>
     </div>
   );

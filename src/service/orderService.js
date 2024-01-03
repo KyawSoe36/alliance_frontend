@@ -14,7 +14,8 @@ export const getList = () => {
     });
 };
 
-export const create = (name, quantity) => {
+export const create = (data) => {
+  const { name, quantity } = data;
   return axios
     .post(`${baseUrl}/order/`, { name, quantity })
     .then((response) => {
@@ -27,7 +28,8 @@ export const create = (name, quantity) => {
     });
 };
 
-export const update = (id, name, quantity) => {
+export const update = (id, data) => {
+  const { name, quantity } = data;
   return axios
     .put(`${baseUrl}/order/${id}`, { name, quantity })
     .then((response) => {
